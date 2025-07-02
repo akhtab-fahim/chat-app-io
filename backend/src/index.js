@@ -10,6 +10,7 @@ import { verifyToken } from "./middleware/auth.js";
 import cookieParser from "cookie-parser";
 import cors from "cors"
 import { Message } from "./models/message.models.js";
+import { upload } from "./middleware/multer.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -139,14 +140,14 @@ io.on("connection", (socket) => {
 });
 
 
-app.post("/sendMessages/:recieverId",verifyToken,async(req,res)=>{
+app.post("/sendMessages/:recieverId",verifyToken,upload.single("file"),async(req,res)=>{
 
     const {content} = req.body;
     const {recieverId} = req.params;
 
-    if(!content){
-        return res.status(400).json({ message: "Content are required." });
-    }
+    // if(!content){
+    //     return res.status(400).json({ message: "Content are required." });
+    // }
     
     let fileUrl;
 
@@ -173,7 +174,7 @@ app.post("/sendMessages/:recieverId",verifyToken,async(req,res)=>{
         io.to(receiverSocketId).emit('private_message',message);
     }
 
-    res.status(200).json({message : "message send "})
+    res.status(200).json({message : "message send ",data : message})
 })
 
 

@@ -5,6 +5,7 @@ import MessageInput from '../components/MessageInput';
 import { socket } from '../utills/socket';
 
 
+
 function Chat() {
   const [contacts, setContacts] = useState([]);
   const [activeContact, setActiveContact] = useState(null);
@@ -116,29 +117,62 @@ useEffect(() => {
     setContacts(contacts.map(c => c._id === contact._id ? { ...c, unreadCount: 0 } : c));
   };
   
- const handleSendMessage = (content) => {
+ const handleSendMessage = async(content,file) => {
 
   if (!currentUser?._id || !activeContact?._id) {
     console.error("Missing currentUser or activeContact");
     return;
   }
 
-  const newMessage = {
-    content,
-    senderId: currentUser._id,
-    receiverId: activeContact._id,
-    createdAt: new Date().toISOString(),
-  };
+  if(content && !file){
+      const newMessage = {
+      content,
+      senderId: currentUser._id,
+      receiverId: activeContact._id,
+      createdAt: new Date().toISOString(),
+    };
 
-  // Emit to server
+    // Emit to server
   socket.emit("send_message", newMessage);
 
   // Optimistically update UI
   setMessages(prev => [...prev, newMessage]);
 
-  setContacts(prev =>
-    prev.map(c =>
-      c._id === activeContact._id ? { ...c, lastMessage: content } : c));
+    setContacts(prev =>
+    prev.map(c =>c._id === activeContact._id ? { ...c, lastMessage: content } : c))
+
+  }
+
+
+
+  if(file){ //HTTP POST
+    const formData = new FormData();
+    formData.append("content", content);
+    formData.append("file", file);
+    formData.append("recieverId", activeContact._id);
+
+    const res = await fetch(`http://localhost:2000/sendMessages/${activeContact._id}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+        body: formData,
+    })
+
+    const data = await res.json();
+    console.log("Response data ",data);
+
+    if (res.ok && data?.data) {
+        setMessages(prev => [...prev, data.data]);
+
+        setContacts(prev =>
+          prev.map(c =>
+            c._id === activeContact._id? { ...c, lastMessage: data.data.content || "[File]" }: c ));
+    }else{
+      console.error("Upload failed:", data);
+    }
+  }
+
 };
 
   
