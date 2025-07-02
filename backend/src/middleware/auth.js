@@ -5,7 +5,7 @@ export const verifyToken = async (req, res, next) => {
     let token;
 
     const refreshToken = req.cookies.refreshToken;
-    console.log(refreshToken);
+    //console.log(refreshToken);
     
     if (refreshToken) {
         token = refreshToken;
@@ -16,7 +16,7 @@ export const verifyToken = async (req, res, next) => {
         }
         token = authHeader.split(" ")[1];
     }
-    console.log(token);
+    //console.log(token);
 
     try {
         const verifiedToken = jwt.verify(token, process.env.TOKEN_SECRET);

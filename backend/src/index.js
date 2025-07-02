@@ -3,6 +3,7 @@ import {Server} from "socket.io";
 import http from "http";
 import { connectDB } from "./db/index.js";
 import { User } from "./models/user.models.js";
+import { uploadOnCloud } from "./utils/cloudinary.js";
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
 import { verifyToken } from "./middleware/auth.js";
@@ -21,7 +22,13 @@ app.use(cors({
 }))
 
 
-const io = new Server(server);
+const io = new Server(server, {
+    cors: {
+        origin: "http://localhost:5173", 
+        methods: ["GET", "POST"],
+        credentials: true
+    }
+});
 
 // io authentication middleware
 
@@ -64,7 +71,7 @@ io.use((socket, next) => {
     }
   }
 
-  console.log("Extracted token:", token);
+  console.log("Sokcet : Auth Middleware :: Extracted token:", token);
 
   if (!token) {
     return next(new Error("No Auth token found"));
@@ -73,7 +80,7 @@ io.use((socket, next) => {
   try {
     const verifiedToken = jwt.verify(token, process.env.IO_TOKEN_SECRET);
     socket.user = verifiedToken;
-    console.log("Verified user:", socket.user);
+    console.log("Sokcet : Auth Middleware :: Verified user:", socket.user);
     next();
   } catch (err) {
     next(new Error("Auth token invalid"));
@@ -84,17 +91,52 @@ io.use((socket, next) => {
 //to maintain the user info
 const userSockedIdInfo = new Map();
 
-io.on("connection",async(socket)=>{
-    console.log("User connected : ",socket.id);
-    userSockedIdInfo.set(socket.user.id,socket.id)
+const userSocketMap = new Map(); // userId -> socket.id
 
+
+// io.on("connection",async(socket)=>{
+//     console.log("User connected : ",socket.id);
+//     userSockedIdInfo.set(socket.user.id,socket.id)
+
+//     socket.on("disconnect",()=>{
+//         userSockedIdInfo.delete(socket.user.id)
+//         console.log(socket.user.id + "disonnected");
+        
+//     })
+
+// })
+
+io.on("connection", (socket) => {
+    
+    console.log("User connected : ", socket.id);
+    userSockedIdInfo.set(socket.user.id, socket.id);
+
+    io.emit("online_users", Array.from(userSockedIdInfo.keys()));
+    
+  socket.on("send_message", async (data) => {
+    // Save to DB
+        console.log("Message received : ", data);
+        const message = await Message.create({
+        content: data.content,
+        senderId: socket.user.id,
+        receiverId: data.receiverId,
+        });
+
+        // Emit to receiver if online
+        const receiverSocketId = userSockedIdInfo.get(data.receiverId);
+        console.log("Reciever Socket Id :: ",receiverSocketId);
+        //console.log("Map info",userSockedIdInfo)
+        if (receiverSocketId) {
+        io.to(receiverSocketId).emit("private_message", message);
+        }
+
+    });
     socket.on("disconnect",()=>{
         userSockedIdInfo.delete(socket.user.id)
-        console.log(socket.user.id + "disonnected");
-        
+        console.log("User disconnected : ",socket.user.id);
+        io.emit("online_users", Array.from(userSockedIdInfo.keys()));
     })
-
-})
+});
 
 
 app.post("/sendMessages/:recieverId",verifyToken,async(req,res)=>{
@@ -134,6 +176,15 @@ app.post("/sendMessages/:recieverId",verifyToken,async(req,res)=>{
     res.status(200).json({message : "message send "})
 })
 
+
+app.get("/auth/users",verifyToken,async(req,res)=>{
+    const users = await User.find({ _id: { $ne: req.user.id } }).select("-password");
+    //console.log(users);
+    if(!users){
+        return res.status(401).json({message : "No users find"})
+    }
+    return res.status(200).json({users})
+})
 
 app.get("/auth/:userId",verifyToken,async(req,res)=>{
     const {userId} = req.params;
@@ -202,7 +253,11 @@ app.post("/auth/register", async (req, res) => {
         .status(200)
         .json({
             accessToken,
-            user,
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+            },
             message: "User registered successfully"
         });
 });
@@ -214,15 +269,15 @@ const {name,email,password} = req.body;
         return res.status(400).json({message : " Any of the fields are missing "})
     }
 
-    const isUserExits = await User.findOne({ $or: [{ email }, { name }] })
-    if(!isUserExits){
+    const user = await User.findOne({ $or: [{ email }, { name }] })
+    if(!user){
         return res.status(400).json({message : " User doesnt exists Register  "})
     } 
 
       const accessToken = jwt.sign({
-        id : isUserExits._id,
-        name : isUserExits.name,
-        phoneNumber : isUserExits.phoneNumber
+        id : user._id,
+        name : user.name,
+        phoneNumber : user.phoneNumber
     },
     process.env.TOKEN_SECRET,
     {
@@ -231,9 +286,9 @@ const {name,email,password} = req.body;
 
 
     const refreshToken = jwt.sign({
-        id : isUserExits._id,
-        name : isUserExits.name,
-        phoneNumber : isUserExits.phoneNumber
+        id : user._id,
+        name : user.name,
+        phoneNumber : user.phoneNumber
     },
     process.env.TOKEN_SECRET,
     {
@@ -245,14 +300,18 @@ const {name,email,password} = req.body;
             secure : true   
     }
 
-    const isPassVerified = await bcrypt.compare(password,isUserExits.password)
+    const isPassVerified = await bcrypt.compare(password,user.password)
     if(isPassVerified){
         res.
         cookie("refreshToken",refreshToken,options)
         .status(200)
         .json({
             accessToken,
-            isUserExits,
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+            },
             message : "User Signed in successfully"
         })
     }

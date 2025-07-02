@@ -10,9 +10,8 @@ function Footer() {
           © {currentYear} ChatApp
         </div>
         <div className="flex space-x-4">
-          <a href="#" className="text-gray-500 hover:text-indigo-600 text-sm">About</a>
-          <a href="#" className="text-gray-500 hover:text-indigo-600 text-sm">Privacy</a>
-          <a href="#" className="text-gray-500 hover:text-indigo-600 text-sm">Terms</a>
+          <a href="https://github.com/akhtab-fahim" className="text-gray-500 hover:text-indigo-600 text-sm">About</a>
+          <a href="https://github.com/akhtab-fahim/chat-app-io" className="text-gray-500 hover:text-indigo-600 text-sm">Source Code</a>
         </div>
       </div>
     </footer>
