@@ -11,9 +11,9 @@ function Header() {
   };
 
   return (
-    <header className="bg-white shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-        <Link to="/" className="text-indigo-600 font-bold text-xl">
+    <header className="bg-white shadow-xl border-b-2  border-indigo-200">
+      <div className="max-w-8xl mx-auto px-2 py-4 flex justify-between items-center ">
+        <Link to="/" className="text-indigo-600 pl-2 font-bold text-2xl">
           ChatApp
         </Link>
         
@@ -21,7 +21,7 @@ function Header() {
           {isLoggedIn ? (
             <button
               onClick={handleLogout}
-              className="px-3 py-1.5 text-sm text-indigo-600 hover:text-indigo-800"
+              className="px-3 py-1.5 text-l font-bold text-indigo-600 border-2 border-indigo-600 rounded-md hover:text-indigo-800"
             >
               Logout
             </button>

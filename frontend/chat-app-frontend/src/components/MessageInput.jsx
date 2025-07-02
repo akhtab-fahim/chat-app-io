@@ -54,12 +54,10 @@ function MessageInput({ onSendMessage }) {
       
       <button 
         type="submit" 
-        className="p-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        className="p-2 bg-white-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
         disabled={!message.trim() || isUploading}
       >
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-        </svg>
+        <img src="./public/send.png" alt="Send" className="h-5 w-5" />
       </button>
     </form>
   );
