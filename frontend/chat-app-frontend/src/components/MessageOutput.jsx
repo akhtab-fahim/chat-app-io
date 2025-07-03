@@ -18,7 +18,7 @@ function MessageOutput({ messages, currentUser }) {
               <div 
                 className={`max-w-xs md:max-w-md lg:max-w-lg px-4 py-2 rounded-lg ${
                   isOwnMessage 
-                    ? 'bg-indigo-600 text-white rounded-br-none' 
+                    ? 'bg-green-500 text-white rounded-br-none' 
                     : 'bg-gray-200 text-gray-800 rounded-bl-none'
                 }`}
               >

@@ -180,7 +180,7 @@ useEffect(() => {
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
       <div className="w-1/4 bg-white border-r border-gray-200 flex flex-col">
-        <div className="p-4 border-b border-gray-200 font-medium text-lg">
+        <div className="p-4 border-b border-gray-200 font-bold text-lg">
           Chats
         </div>
         <ChatList 
@@ -194,7 +194,7 @@ useEffect(() => {
       <div className="flex-1 flex flex-col">
         {/* Chat Header */}
         <div className="p-4 border-b border-gray-200 flex items-center bg-white">
-          <div className="w-10 h-10 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-600 font-bold mr-3">
+          <div className="w-10 h-10 rounded-full bg-green-200 flex items-center justify-center text-green-600 font-bold mr-3">
             {activeContact?.name?.[0]?.toUpperCase() || ''}
           </div>
           <div>

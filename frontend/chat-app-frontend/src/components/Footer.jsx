@@ -5,9 +5,9 @@ function Footer() {
   
   return (
     <footer className=" h-32 bg-white border-t border-gray-200 py-4 mt-auto">
-      <div className="max-w-7xl font-mono mx-auto px-4 py-2 flex justify-between items-center">
+      <div className="max-w-7xl font-mono mx-auto px-4 py-5 flex justify-between items-center">
         <div className="text-gray-500 text-l font-bold ">
-          © {currentYear} ChatApp
+          © {currentYear} Whisprr
         </div>
         <div className="flex space-x-4 animate-pulse">
           <a href="https://github.com/akhtab-fahim"><img  src="./public/github.png" alt="Github" className="h-6 animate-wiggle" /></a>
